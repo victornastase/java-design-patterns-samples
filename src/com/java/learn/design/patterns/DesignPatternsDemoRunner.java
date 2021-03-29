@@ -5,6 +5,20 @@ import com.java.learn.design.patterns.behavioral.command.Broker;
 import com.java.learn.design.patterns.behavioral.command.Buy;
 import com.java.learn.design.patterns.behavioral.command.MarketTransaction;
 import com.java.learn.design.patterns.behavioral.command.Sell;
+import com.java.learn.design.patterns.behavioral.iterator.NamesRepository;
+import com.java.learn.design.patterns.behavioral.mediator.ChatMediator;
+import com.java.learn.design.patterns.behavioral.mediator.ChatMediatorContext;
+import com.java.learn.design.patterns.behavioral.mediator.ChatUser;
+import com.java.learn.design.patterns.behavioral.mediator.User;
+import com.java.learn.design.patterns.behavioral.observer.Editor;
+import com.java.learn.design.patterns.behavioral.observer.EmailNotificationListener;
+import com.java.learn.design.patterns.behavioral.observer.LogOpenListener;
+import com.java.learn.design.patterns.behavioral.state.AlertContext;
+import com.java.learn.design.patterns.behavioral.state.Silent;
+import com.java.learn.design.patterns.behavioral.strategy.AddOperation;
+import com.java.learn.design.patterns.behavioral.strategy.MathContext;
+import com.java.learn.design.patterns.behavioral.strategy.MultiplyOperation;
+import com.java.learn.design.patterns.behavioral.strategy.SubstractOperation;
 import com.java.learn.design.patterns.creational.builder.BankAccount;
 import com.java.learn.design.patterns.creational.factory.ShapeFactory;
 import com.java.learn.design.patterns.creational.factory.models.Shape;
@@ -19,11 +33,19 @@ import com.java.learn.design.patterns.structural.composite.CompanyDirector;
 import com.java.learn.design.patterns.structural.composite.Developer;
 import com.java.learn.design.patterns.structural.composite.Employee;
 import com.java.learn.design.patterns.structural.composite.Manager;
+import com.java.learn.design.patterns.structural.decorator.*;
+import com.java.learn.design.patterns.structural.facade.FrontDeskFacade;
+import com.java.learn.design.patterns.structural.flyweight.CoffeeFactory;
+import com.java.learn.design.patterns.structural.flyweight.CoffeeFlavour;
+import com.java.learn.design.patterns.structural.flyweight.CoffeeLatteArt;
+import com.java.learn.design.patterns.structural.flyweight.CoffeeShop;
 import com.java.learn.design.patterns.structural.proxy.ThirdPartyYouTube;
 import com.java.learn.design.patterns.structural.proxy.YouTubeCacheProxy;
 import com.java.learn.design.patterns.structural.proxy.YouTubeDownloader;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,6 +63,14 @@ public class DesignPatternsDemoRunner {
     private static final String PROTOTYPE = "Prototype";
     private static final String COMPOSITE = "Composite";
     private static final String PROXY = "Proxy";
+    private static final String FACADE = "Facade";
+    private static final String DECORATOR = "Decorator";
+    private static final String FLYWEIGHT = "Flyweight";
+    private static final String ITERATOR = "Iterator";
+    private static final String OBSERVER = "Observer";
+    private static final String STATE = "State";
+    private static final String STRATEGY = "Strategy";
+    private static final String MEDIATOR = "Mediator";
 
     private static Server server;
     private static void initCORServer() {
@@ -58,7 +88,7 @@ public class DesignPatternsDemoRunner {
         server.setMiddleware(middleware);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         factoryDesignDemo();
 
         bridgeDesignDemo();
@@ -77,6 +107,153 @@ public class DesignPatternsDemoRunner {
 
         //TODO: uncomment only when you want to learn about Proxy Design Pattern; slow down the execution.
         //proxyDesignDemo();
+
+        facadeDesignDemo();
+
+        decoratorDesignDemo();
+
+        flyweightDesignDemo();
+
+        iteratorDesignDemo();
+
+        observerDesignDemo();
+
+        stateDesignDemo();
+
+        strategyDesignDemo();
+
+        mediatorDesignDemo();
+    }
+
+    private static void mediatorDesignDemo() {
+        printDesignPatternStart(MEDIATOR);
+
+        ChatMediator mediator = new ChatMediatorContext();
+        User user1 = new ChatUser(mediator, "Pankaj");
+        User user2 = new ChatUser(mediator, "Lisa");
+        User user3 = new ChatUser(mediator, "Saurabh");
+        User user4 = new ChatUser(mediator, "David");
+        mediator.addUser(user1);
+        mediator.addUser(user2);
+        mediator.addUser(user3);
+        mediator.addUser(user4);
+
+        user1.send("Hi all!");
+
+        printDesignPatternEnd(MEDIATOR);
+    }
+
+    private static void strategyDesignDemo() {
+        printDesignPatternStart(STRATEGY);
+
+        MathContext context = new MathContext(new AddOperation());
+        System.out.println("10 + 5 = " + context.executeOperation(10, 5));
+
+        context = new MathContext(new SubstractOperation());
+        System.out.println("10 - 5 = " + context.executeOperation(10, 5));
+
+        context = new MathContext(new MultiplyOperation());
+        System.out.println("10 * 5 = " + context.executeOperation(10, 5));
+
+        printDesignPatternEnd(STRATEGY);
+    }
+
+    private static void stateDesignDemo() {
+        printDesignPatternStart(STATE);
+
+        AlertContext context = new AlertContext();
+        context.alert();
+        context.alert();
+        context.setCurrentState(new Silent());
+        context.alert();
+
+        printDesignPatternEnd(STATE);
+    }
+
+    private static void observerDesignDemo() {
+        printDesignPatternStart(OBSERVER);
+
+        Editor editor = new Editor();
+        editor.events.subscribe("open", new LogOpenListener("/path/to/log/file.txt"));
+        editor.events.subscribe("save", new EmailNotificationListener("admin@test.com"));
+
+        try {
+            editor.openFile("test.txt");
+            editor.saveFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        printDesignPatternEnd(OBSERVER);
+    }
+
+    private static void iteratorDesignDemo() {
+        printDesignPatternStart(ITERATOR);
+
+        NamesRepository repo = new NamesRepository();
+        Iterator<String> repoIterator = repo.getIterator();
+        while(repoIterator.hasNext()) {
+            System.out.println(repoIterator.next());
+        }
+        System.out.println("Same result but using for-each loop");
+        String[] names = repo.names;
+        for(String name : names) {
+            System.out.println(name);
+        }
+
+        printDesignPatternEnd(ITERATOR);
+    }
+
+    private static void flyweightDesignDemo() {
+        printDesignPatternStart(FLYWEIGHT);
+
+        CoffeeShop shop = new CoffeeShop();
+
+        shop.takeOrder(CoffeeFlavour.CAPPUCCINO, CoffeeLatteArt.BARISTA_SWAG, 5);
+        shop.takeOrder(CoffeeFlavour.AFFOGATO, CoffeeLatteArt.FRENCH, 7);
+        shop.takeOrder(CoffeeFlavour.ESPRESSO, CoffeeLatteArt.FISHBONE, 1);
+        shop.takeOrder(CoffeeFlavour.LATTE, CoffeeLatteArt.DISNEY, 3);
+        shop.takeOrder(CoffeeFlavour.CAPPUCCINO, CoffeeLatteArt.CAT, 2);
+        shop.takeOrder(CoffeeFlavour.ESPRESSO, CoffeeLatteArt.FISHBONE, 8);
+        shop.takeOrder(CoffeeFlavour.AFFOGATO, CoffeeLatteArt.BARISTA_SWAG, 4);
+        shop.takeOrder(CoffeeFlavour.CAPPUCCINO, CoffeeLatteArt.DISNEY, 10);
+        shop.takeOrder(CoffeeFlavour.LATTE, CoffeeLatteArt.LITTLE_BUNNY, 6);
+        shop.takeOrder(CoffeeFlavour.FRAPPUCCINO, CoffeeLatteArt.DISNEY, 9);
+
+        System.out.println("------------------------------------------------------------");
+        System.out.println("Number of Order Objects: " + CoffeeShop.getNumberOfOrders());
+        System.out.println("Number of Coffee Objects: " + CoffeeFactory.getNumberOfCoffee());
+
+        printDesignPatternEnd(FLYWEIGHT);
+    }
+
+    private static void decoratorDesignDemo() throws FileNotFoundException {
+        printDesignPatternStart(DECORATOR);
+
+        String salaryRecords = "Name,Salary\nJohn Smith,100000\nSteven Jobs,912000";
+        DataSourceDecorator encoded = new CompressionDecorator(new EncryptionDecorator(new FileDataSource("out/OutputDecorator.txt")));
+
+        encoded.writeData(salaryRecords);
+
+        DataSource plain = new FileDataSource("out/OutputDecorator.txt");
+        System.out.println("- Input ----------------");
+        System.out.println(salaryRecords);
+        System.out.println("- Encoded --------------");
+        System.out.println(plain.readData());
+        System.out.println("- Decoded --------------");
+        System.out.println(encoded.readData());
+
+        printDesignPatternEnd(DECORATOR);
+    }
+
+    private static void facadeDesignDemo() {
+        printDesignPatternStart(FACADE);
+
+        FrontDeskFacade frontDesk = new FrontDeskFacade();
+        frontDesk.openAccount();
+        frontDesk.emitCard();
+
+        printDesignPatternEnd(FACADE);
     }
 
     private static void proxyDesignDemo() {
