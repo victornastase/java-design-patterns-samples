@@ -10,6 +10,9 @@ import com.java.learn.design.patterns.behavioral.mediator.ChatMediator;
 import com.java.learn.design.patterns.behavioral.mediator.ChatMediatorContext;
 import com.java.learn.design.patterns.behavioral.mediator.ChatUser;
 import com.java.learn.design.patterns.behavioral.mediator.User;
+import com.java.learn.design.patterns.behavioral.memento.EmployeeCaretaker;
+import com.java.learn.design.patterns.behavioral.memento.EmployeeMemento;
+import com.java.learn.design.patterns.behavioral.memento.EmployeePerson;
 import com.java.learn.design.patterns.behavioral.observer.Editor;
 import com.java.learn.design.patterns.behavioral.observer.EmailNotificationListener;
 import com.java.learn.design.patterns.behavioral.observer.LogOpenListener;
@@ -19,6 +22,10 @@ import com.java.learn.design.patterns.behavioral.strategy.AddOperation;
 import com.java.learn.design.patterns.behavioral.strategy.MathContext;
 import com.java.learn.design.patterns.behavioral.strategy.MultiplyOperation;
 import com.java.learn.design.patterns.behavioral.strategy.SubstractOperation;
+import com.java.learn.design.patterns.behavioral.template.Facebook;
+import com.java.learn.design.patterns.behavioral.template.Network;
+import com.java.learn.design.patterns.behavioral.template.Twitter;
+import com.java.learn.design.patterns.behavioral.visitor.*;
 import com.java.learn.design.patterns.creational.builder.BankAccount;
 import com.java.learn.design.patterns.creational.factory.ShapeFactory;
 import com.java.learn.design.patterns.creational.factory.models.Shape;
@@ -43,7 +50,10 @@ import com.java.learn.design.patterns.structural.proxy.ThirdPartyYouTube;
 import com.java.learn.design.patterns.structural.proxy.YouTubeCacheProxy;
 import com.java.learn.design.patterns.structural.proxy.YouTubeDownloader;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,6 +81,9 @@ public class DesignPatternsDemoRunner {
     private static final String STATE = "State";
     private static final String STRATEGY = "Strategy";
     private static final String MEDIATOR = "Mediator";
+    private static final String MEMENTO = "Memento";
+    private static final String VISITOR = "Visitor";
+    private static final String TEMPLATE = "Template";
 
     private static Server server;
     private static void initCORServer() {
@@ -88,7 +101,7 @@ public class DesignPatternsDemoRunner {
         server.setMiddleware(middleware);
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         factoryDesignDemo();
 
         bridgeDesignDemo();
@@ -105,7 +118,7 @@ public class DesignPatternsDemoRunner {
 
         compositeDesignDemo();
 
-        //TODO: uncomment only when you want to learn about Proxy Design Pattern; slow down the execution.
+        //TODO: uncomment only when you want to learn about Proxy Design Pattern; slows down the execution.
         //proxyDesignDemo();
 
         facadeDesignDemo();
@@ -123,6 +136,134 @@ public class DesignPatternsDemoRunner {
         strategyDesignDemo();
 
         mediatorDesignDemo();
+
+        mementoDesignDemo();
+
+        visitorDesignDemo();
+
+        //TODO: uncomment only when you want to learn about Template Design Pattern; slows down the execution.
+        //templateDesignDemo();
+    }
+
+    private static void templateDesignDemo() throws IOException {
+        printDesignPatternStart(TEMPLATE);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        Network network = null;
+        System.out.print("Input user name: ");
+        String userName = reader.readLine();
+        System.out.print("Input password: ");
+        String password = reader.readLine();
+
+        // Enter the message.
+        System.out.print("Input message: ");
+        String message = reader.readLine();
+
+        System.out.println("\nChoose social network for posting message.\n" +
+                "1 - Facebook\n" +
+                "2 - Twitter");
+        int choice = Integer.parseInt(reader.readLine());
+
+        // Create proper network object and send the message.
+        if (choice == 1) {
+            network = new Facebook(userName, password);
+        } else if (choice == 2) {
+            network = new Twitter(userName, password);
+        }
+        network.post(message);
+
+        printDesignPatternEnd(TEMPLATE);
+    }
+
+    private static void visitorDesignDemo() {
+        printDesignPatternStart(VISITOR);
+
+        VisitorDot dot = new VisitorDot(1, 10, 55);
+        VisitorCircle circle = new VisitorCircle(2, 23, 15, 10);
+        VisitorRectangle rectangle = new VisitorRectangle(3, 10, 17, 20, 30);
+
+        CompoundShape compoundShape = new CompoundShape(4);
+        compoundShape.add(dot);
+        compoundShape.add(circle);
+        compoundShape.add(rectangle);
+
+        CompoundShape c = new CompoundShape(5);
+        c.add(dot);
+        compoundShape.add(c);
+
+        export(circle, compoundShape);
+
+        printDesignPatternEnd(VISITOR);
+    }
+
+    private static void export(VisitorShape... shapes) {
+        XMLExportVisitor exportVisitor = new XMLExportVisitor();
+        System.out.println(exportVisitor.export(shapes));
+    }
+
+    private static void mementoDesignDemo() {
+        printDesignPatternStart(MEMENTO);
+
+        EmployeeCaretaker caretaker = new EmployeeCaretaker();
+        System.out.println("creating employee objects with intial values");
+        EmployeePerson racheal = new EmployeePerson(100);
+        racheal.setName("Racheal");
+        racheal.setDesignation("Lead");
+        racheal.setSalary(100000);
+        racheal.setDepartment("R&D");
+        racheal.setProject("Transportation Management");
+        EmployeePerson micheal = new EmployeePerson(101);
+        micheal.setName("Micheal");
+        micheal.setDesignation("Developer");
+        micheal.setSalary(75000);
+        micheal.setDepartment("Engineering");
+        micheal.setProject("IoT");
+        System.out.println(racheal);
+        System.out.println(micheal);
+
+        EmployeeMemento rachealMemento = racheal.createMemento();
+        EmployeeMemento michealMemento = micheal.createMemento();
+
+        caretaker.addMemento(racheal.getEmpId(), "Saved at intitial stage", rachealMemento);
+        caretaker.addMemento(micheal.getEmpId(), "Saved at intitial stage", michealMemento);
+
+        System.out.println("\nracheal got promotion");
+        racheal.setDesignation("Manager");
+        racheal.setSalary(120000);
+        System.out.println("micheal assigned to another project.");
+        micheal.setProject("Android App");
+        System.out.println(racheal);
+        System.out.println(micheal);
+        rachealMemento = racheal.createMemento();
+        michealMemento = micheal.createMemento();
+
+        caretaker.addMemento(racheal.getEmpId(), "Saved at promotion", rachealMemento);
+        caretaker.addMemento(micheal.getEmpId(), "Saved at android project", michealMemento);
+
+        System.out.println("\nracheal got increment");
+        racheal.setSalary(140000);
+        System.out.println("micheal got promotion");
+        micheal.setDesignation("Lead Developer");
+        micheal.setSalary(90000);
+        System.out.println(racheal);
+        System.out.println(micheal);
+        rachealMemento = racheal.createMemento();
+        michealMemento = micheal.createMemento();
+        caretaker.addMemento(racheal.getEmpId(), "Saved at increment", rachealMemento);
+        caretaker.addMemento(micheal.getEmpId(), "Saved at promotion", michealMemento);
+        System.out.println("\nLet's print the stored memento objects we have");
+        caretaker.printStoredMementoObjects();
+
+        System.out.println("\nnow for some reason, we like to revert racheal to initial stage.");
+        System.out.println("and micheal to android project.");
+        rachealMemento = caretaker.getMemento(racheal.getEmpId(), "Saved at intitial stage");
+        michealMemento = caretaker.getMemento(micheal.getEmpId(), "Saved at android project");
+        racheal.restore(rachealMemento);
+        micheal.restore(michealMemento);
+        System.out.println(racheal);
+        System.out.println(micheal);
+
+        printDesignPatternEnd(MEMENTO);
     }
 
     private static void mediatorDesignDemo() {
